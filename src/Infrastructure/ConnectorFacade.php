@@ -10,44 +10,43 @@ use RedisException;
 
 class ConnectorFacade
 {
-    public string $host;
-    public int $port = 6379;
-    public ?string $password = null;
-    public ?int $dbindex = null;
-
     public Connector $connector;
     private LoggerInterface $logger;
 
+    /**
+     * @throws ConnectorException
+     * @throws RedisException
+     */
     public function __construct(string $host, int $port, ?string $password, ?int $dbindex, LoggerInterface $logger)
     {
-        $this->host = $host;
-        $this->port = $port;
-        $this->password = $password;
-        $this->dbindex = $dbindex;
         $this->logger = $logger;
+        $redis = $this->connectToRedis($host, $port, $password, $dbindex);
+        $this->connector = new Connector($redis);
     }
 
-    protected function build(): void
+    /**
+     * @throws ConnectorException
+     * @throws RedisException
+     */
+    private function connectToRedis(string $host, int $port, ?string $password, ?int $dbindex): Redis
     {
         $redis = new Redis();
-
         try {
-            $isConnected = $redis->isConnected();
-            if (! $isConnected && $redis->ping('Pong')) {
-                $isConnected = $redis->connect(
-                    $this->host,
-                    $this->port,
-                );
+            if (!$redis->isConnected()) {
+                $redis->connect($host, $port);
             }
-        } catch (RedisException) {
+        } catch (RedisException $e) {
             $this->logger->error('Failed to connect to Redis', ['exception' => $e->getMessage()]);
-            return;
+            throw new ConnectorException('Failed to connect to Redis', 0, $e);
         }
 
-        if ($isConnected) {
-            $redis->auth($this->password);
-            $redis->select($this->dbindex);
-            $this->connector = new Connector($redis);
+        if ($password !== null) {
+            $redis->auth($password);
         }
+        if ($dbindex !== null) {
+            $redis->select($dbindex);
+        }
+
+        return $redis;
     }
 }

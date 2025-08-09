@@ -5,17 +5,17 @@ namespace Raketa\BackendTestTask\Controller;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Raketa\BackendTestTask\Domain\CartItem;
-use Raketa\BackendTestTask\Repository\CartManager;
-use Raketa\BackendTestTask\Repository\ProductRepository;
+use Raketa\BackendTestTask\Domain\CartManagerInterface;
+use Raketa\BackendTestTask\Domain\ProductRepositoryInterface;
 use Raketa\BackendTestTask\View\CartView;
 use Ramsey\Uuid\Uuid;
 
 readonly class AddToCartController
 {
     public function __construct(
-        private ProductRepository $productRepository,
+        private ProductRepositoryInterface $productRepository,
         private CartView $cartView,
-        private CartManager $cartManager,
+        private CartManagerInterface $cartManager,
     ) {
     }
 

@@ -3,15 +3,11 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Raketa\BackendTestTask\Controller\GetCartController;
-use Raketa\BackendTestTask\Controller\AddToCartController;
+use Doctrine\DBAL\DriverManager;
 use Raketa\BackendTestTask\Controller\GetProductsController;
+use Raketa\BackendTestTask\Infrastructure\ProductRepository;
 use Raketa\BackendTestTask\View\CartView;
 use Raketa\BackendTestTask\View\ProductsView;
-use Raketa\BackendTestTask\Repository\ProductRepository;
-use Raketa\BackendTestTask\Repository\CartManager;
-use Raketa\BackendTestTask\Infrastructure\ConnectorFacade;
-use Doctrine\DBAL\DriverManager;
 
 $connectionParams = [
     'driver'   => 'pdo_mysql',

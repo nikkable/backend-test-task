@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types = 1);
+namespace Raketa\BackendTestTask\Infrastructure;
 
-namespace Raketa\BackendTestTask\Repository;
-
-use Exception;
 use Psr\Log\LoggerInterface;
 use Raketa\BackendTestTask\Domain\Cart;
+use Raketa\BackendTestTask\Domain\CartManagerInterface;
 use Raketa\BackendTestTask\Domain\Customer;
-use Raketa\BackendTestTask\Infrastructure\Connector;
+use Ramsey\Uuid\Uuid;
 
-class CartManager
+readonly class RedisCartManager implements CartManagerInterface
 {
     private Connector $connector;
     private LoggerInterface $logger;
@@ -21,21 +19,15 @@ class CartManager
         $this->logger = $logger;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function saveCart(Cart $cart): void
     {
         try {
             $this->connector->set(session_id(), $cart);
-        } catch (Exception $e) {
+        } catch (ConnectorException $e) {
             $this->logger->error('Error saving cart to Redis', ['exception' => $e->getMessage()]);
         }
     }
 
-    /**
-     * @return Cart
-     */
     public function getCart(): Cart
     {
         try {
@@ -43,17 +35,11 @@ class CartManager
             if ($cart instanceof Cart) {
                 return $cart;
             }
-        } catch (Exception $e) {
+        } catch (ConnectorException $e) {
             $this->logger->error('Error getting cart from Redis', ['exception' => $e->getMessage()]);
         }
 
-        $customer = new Customer(
-            1,
-            'Test',
-            'User',
-            '',
-            'test.user@example.com'
-        );
-        return new Cart(session_id(), $customer, 'credit_card', []);
+        $customer = new Customer(1, 'Test', 'User', '', 'test.user@example.com');
+        return new Cart(Uuid::uuid4()->toString(), $customer, 'credit_card', []);
     }
 }

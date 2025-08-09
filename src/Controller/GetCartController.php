@@ -6,14 +6,14 @@ namespace Raketa\BackendTestTask\Controller;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Raketa\BackendTestTask\Repository\CartManager;
+use Raketa\BackendTestTask\Domain\CartManagerInterface;
 use Raketa\BackendTestTask\View\CartView;
 
 readonly class GetCartController
 {
     public function __construct(
         public CartView $cartView,
-        public CartManager $cartManager
+        public CartManagerInterface $cartManager
     ) {
     }
 
