@@ -14,16 +14,21 @@ class Connector
 
     public function __construct($redis)
     {
-        return $this->redis = $redis;
+        $this->redis = $redis;
     }
 
     /**
      * @throws ConnectorException
      */
-    public function get(Cart $key)
+    public function get(string $key)
     {
         try {
-            return unserialize($this->redis->get($key));
+            $value = $this->redis->get($key);
+            if ($value === false) {
+                return null;
+            }
+
+            return unserialize($value);
         } catch (RedisException $e) {
             throw new ConnectorException('Connector error', $e->getCode(), $e);
         }
@@ -32,7 +37,7 @@ class Connector
     /**
      * @throws ConnectorException
      */
-    public function set(string $key, Cart $value)
+    public function set(string $key, Cart $value): void
     {
         try {
             $this->redis->setex($key, 24 * 60 * 60, serialize($value));
@@ -41,6 +46,9 @@ class Connector
         }
     }
 
+    /**
+     * @throws RedisException
+     */
     public function has($key): bool
     {
         return $this->redis->exists($key);

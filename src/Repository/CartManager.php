@@ -7,46 +7,53 @@ namespace Raketa\BackendTestTask\Repository;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Raketa\BackendTestTask\Domain\Cart;
-use Raketa\BackendTestTask\Infrastructure\ConnectorFacade;
+use Raketa\BackendTestTask\Domain\Customer;
+use Raketa\BackendTestTask\Infrastructure\Connector;
 
-class CartManager extends ConnectorFacade
+class CartManager
 {
-    public $logger;
+    private Connector $connector;
+    private LoggerInterface $logger;
 
-    public function __construct($host, $port, $password)
+    public function __construct(Connector $connector, LoggerInterface $logger)
     {
-        parent::__construct($host, $port, $password, 1);
-        parent::build();
-    }
-
-    public function setLogger(LoggerInterface $logger)
-    {
+        $this->connector = $connector;
         $this->logger = $logger;
     }
 
     /**
      * @inheritdoc
      */
-    public function saveCart(Cart $cart)
+    public function saveCart(Cart $cart): void
     {
         try {
-            $this->connector->set($cart, session_id());
+            $this->connector->set(session_id(), $cart);
         } catch (Exception $e) {
-            $this->logger->error('Error');
+            $this->logger->error('Error saving cart to Redis', ['exception' => $e->getMessage()]);
         }
     }
 
     /**
-     * @return ?Cart
+     * @return Cart
      */
-    public function getCart()
+    public function getCart(): Cart
     {
         try {
-            return $this->connector->get(session_id());
+            $cart = $this->connector->get(session_id());
+            if ($cart instanceof Cart) {
+                return $cart;
+            }
         } catch (Exception $e) {
-            $this->logger->error('Error');
+            $this->logger->error('Error getting cart from Redis', ['exception' => $e->getMessage()]);
         }
 
-        return new Cart(session_id(), []);
+        $customer = new Customer(
+            1,
+            'Test',
+            'User',
+            '',
+            'test.user@example.com'
+        );
+        return new Cart(session_id(), $customer, 'credit_card', []);
     }
 }

@@ -32,6 +32,8 @@ readonly class AddToCartController
             $rawRequest['quantity'],
         ));
 
+        $this->cartManager->saveCart($cart);
+
         $response = new JsonResponse();
         $response->getBody()->write(
             json_encode(

@@ -27,7 +27,7 @@ RUN pecl install redis \
     && docker-php-ext-enable redis
 
 # Рабочая директория
-WORKDIR /var/wwwы
+WORKDIR /var/www
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

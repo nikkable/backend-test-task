@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Raketa\BackendTestTask\Infrastructure;
 
+use Psr\Log\LoggerInterface;
 use Redis;
 use RedisException;
 
@@ -14,14 +15,16 @@ class ConnectorFacade
     public ?string $password = null;
     public ?int $dbindex = null;
 
-    public $connector;
+    public Connector $connector;
+    private LoggerInterface $logger;
 
-    public function __construct($host, $port, $password, $dbindex)
+    public function __construct(string $host, int $port, ?string $password, ?int $dbindex, LoggerInterface $logger)
     {
         $this->host = $host;
         $this->port = $port;
         $this->password = $password;
         $this->dbindex = $dbindex;
+        $this->logger = $logger;
     }
 
     protected function build(): void
@@ -37,6 +40,8 @@ class ConnectorFacade
                 );
             }
         } catch (RedisException) {
+            $this->logger->error('Failed to connect to Redis', ['exception' => $e->getMessage()]);
+            return;
         }
 
         if ($isConnected) {

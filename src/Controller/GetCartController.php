@@ -22,7 +22,7 @@ readonly class GetCartController
         $response = new JsonResponse();
         $cart = $this->cartManager->getCart();
 
-        if (! $cart) {
+        if (empty($cart->getItems())) {
             $response->getBody()->write(
                 json_encode(
                     ['message' => 'Cart not found'],
@@ -44,6 +44,6 @@ readonly class GetCartController
 
         return $response
             ->withHeader('Content-Type', 'application/json; charset=utf-8')
-            ->withStatus(404);
+            ->withStatus(200);
     }
 }
